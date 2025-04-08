@@ -1,110 +1,74 @@
-import React from "react";
-import { HiOutlineArrowNarrowRight } from "react-icons/hi";
+import React, { useState } from "react";
 import axios from "axios";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 
 const Reservation = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [phone, setPhone] = useState(0);
-  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    date: "",
+    time: "",
+    guests: 1,
+  });
 
-  const handleReservation = async (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post(
-        "http://localhost:4000/reservation/send",
-        { firstName, lastName, email, phone, date, time },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-      toast.success(data.message);
-      setFirstName("");
-      setLastName("");
-      setPhone(0);
-      setEmail("");
-      setTime("");
-      setDate("");
-      navigate("/success");
+      await axios.post("http://localhost:5000/api/v1/reservation/send", form);
+      alert("Reservation submitted successfully!");
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        date: "",
+        time: "",
+        guests: 1,
+      });
     } catch (error) {
-      toast.error(error.response.data.message);
+      console.error("Reservation failed:", error);
+      alert("Reservation failed");
     }
   };
 
   return (
-    <section className="reservation" id="reservation">
-      <div className="container">
-        <div className="banner">
-          <img src="/reservation.png" alt="res" />
-        </div>
-        <div className="banner">
-          <div className="reservation_form_box">
-            <h1>MAKE A RESERVATION</h1>
-            <p>For Further Questions, Please Call</p>
-            <form>
-              <div>
-                <input
-                  type="text"
-                  placeholder="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-              </div>
-              <div>
-                <input
-                  type="date"
-                  placeholder="Date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-                <input
-                  type="time"
-                  placeholder="Time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                />
-              </div>
-              <div>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="email_tag"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                  type="number"
-                  placeholder="Phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-              <button type="submit" onClick={handleReservation}>
-                RESERVE NOW{" "}
-                <span>
-                  <HiOutlineArrowNarrowRight />
-                </span>
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f5f5f5",
+      }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "grid",
+          gap: "1rem",
+          padding: "2rem",
+          borderRadius: "8px",
+          background: "#fff",
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+          width: "100%",
+          maxWidth: "400px",
+        }}
+      >
+        <h2 style={{ textAlign: "center" }}>Make a Reservation</h2>
+        <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Name" required />
+        <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email" required />
+        <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" required />
+        <input type="date" name="date" value={form.date} onChange={handleChange} required />
+        <input type="time" name="time" value={form.time} onChange={handleChange} required />
+        <input type="number" name="guests" value={form.guests} onChange={handleChange} min="1" required />
+        <button type="submit" style={{ padding: "0.5rem", background: "#333", color: "#fff", border: "none", borderRadius: "4px" }}>
+          Reserve
+        </button>
+      </form>
+    </div>
   );
 };
 
